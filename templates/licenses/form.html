@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit license' if license else 'New license' }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit license' if license else 'New license' }}</h1>
+<form method="post" class="card form">
+  {% if not license %}
+    <label>Product
+      <select name="product_id" required>
+        {% for p in products %}
+          <option value="{{ p.id }}">{{ p.name }} ({{ p.code_prefix }})</option>
+        {% endfor %}
+      </select>
+    </label>
+  {% endif %}
+  <label>Customer name
+    <input type="text" name="customer_name"
+           value="{{ license.customer_name if license else '' }}" required>
+  </label>
+  <label>Customer email
+    <input type="email" name="customer_email"
+           value="{{ license.customer_email if license else '' }}">
+  </label>
+  <label>License type
+    <select name="license_type">
+      {% for t in ['Standard','Professional','Enterprise','Trial'] %}
+        <option {{ 'selected' if license and license.license_type == t }}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  {% if license %}
+  <label>Status
+    <select name="status">
+      {% for s in ['pending','active','revoked'] %}
+        <option {{ 'selected' if license.status == s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  {% endif %}
+  <label>Notes
+    <textarea name="notes" rows="3">{{ license.notes if license else '' }}</textarea>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+    {% if license %}
+      <a href="{{ url_for('licenses.history', lid=license.id) }}" class="btn">Cancel</a>
+    {% else %}
+      <a href="{{ url_for('licenses.list') }}" class="btn">Cancel</a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

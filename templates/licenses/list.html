@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Licenses{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Licenses</h1>
+  <a href="{{ url_for('licenses.add') }}" class="btn btn-primary">+ New license</a>
+</div>
+<div class="card">
+  <table class="table">
+    <thead><tr>
+      <th>Key</th><th>Product</th><th>Customer</th><th>Type</th><th>Status</th><th>Activated</th><th>Actions</th>
+    </tr></thead>
+    <tbody>
+    {% for l in licenses %}
+      <tr>
+        <td><code>{{ l.license_key }}</code></td>
+        <td>{{ l.product_name }} <small>({{ l.code_prefix }})</small></td>
+        <td>{{ l.customer_name }}<br><small>{{ l.customer_email or '' }}</small></td>
+        <td>{{ l.license_type }}</td>
+        <td>
+          {% if l.status == 'active' %}<span class="badge badge-ok">active</span>
+          {% elif l.status == 'pending' %}<span class="badge badge-warn">pending</span>
+          {% else %}<span class="badge badge-fail">revoked</span>{% endif %}
+        </td>
+        <td>{{ l.activated_at | fmt }}</td>
+        <td class="actions">
+          <a href="{{ url_for('licenses.history', lid=l.id) }}" class="btn btn-sm btn-outline-primary">History</a>
+          <a href="{{ url_for('licenses.edit', lid=l.id) }}" class="btn btn-sm btn-outline">Edit</a>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="empty">No licenses yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

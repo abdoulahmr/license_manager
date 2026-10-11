@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit product' if product else 'New product' }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit product' if product else 'New product' }}</h1>
+<form method="post" class="card form">
+  <label>Name
+    <input type="text" name="name"
+           value="{{ product.name if product else '' }}" required>
+  </label>
+  <label>Code prefix (3–5 chars, e.g. OPTI)
+    <input type="text" name="code_prefix" maxlength="5"
+           value="{{ product.code_prefix if product else '' }}"
+           required pattern="[A-Za-z]{3,5}">
+  </label>
+  <label>Version
+    <input type="text" name="version"
+           value="{{ product.version if product else '1.0' }}">
+  </label>
+  <label>Description
+    <textarea name="description" rows="3">{{ product.description if product else '' }}</textarea>
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{{ url_for('products.list') }}" class="btn">Cancel</a>
+  </div>
+</form>
+{% endblock %}

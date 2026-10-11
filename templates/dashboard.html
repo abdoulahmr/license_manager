@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block head %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="kpis">
+  <div class="kpi"><div class="kpi-label">Products</div><div class="kpi-value">{{ counts.products }}</div></div>
+  <div class="kpi"><div class="kpi-label">Licenses</div><div class="kpi-value">{{ counts.licenses }}</div></div>
+  <div class="kpi"><div class="kpi-label">Active</div><div class="kpi-value">{{ counts.active }}</div></div>
+  <div class="kpi"><div class="kpi-label">Pending</div><div class="kpi-value">{{ counts.pending }}</div></div>
+  <div class="kpi"><div class="kpi-label">Revoked</div><div class="kpi-value">{{ counts.revoked }}</div></div>
+  <div class="kpi"><div class="kpi-label">Activations</div><div class="kpi-value">{{ counts.activations }}</div></div>
+  <div class="kpi kpi-warn"><div class="kpi-label">Failed attempts</div><div class="kpi-value">{{ counts.failed }}</div></div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Activations (last 30 days)</h2>
+    <canvas id="ts-chart" height="200"></canvas>
+  </div>
+  <div class="card">
+    <h2>Top countries</h2>
+    <canvas id="country-chart" height="200"></canvas>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Recent activations</h2>
+  <table class="table">
+    <thead><tr><th>When</th><th>License</th><th>Customer</th><th>Product</th><th>Event</th><th>Country</th><th>Result</th></tr></thead>
+    <tbody>
+    {% for a in recent %}
+      <tr>
+        <td>{{ a.created_at | fmt }}</td>
+        <td><code>{{ a.license_key }}</code></td>
+        <td>{{ a.customer_name }}</td>
+        <td>{{ a.product_name }}</td>
+        <td>{{ a.event_type }}</td>
+        <td>{{ a.country or '—' }}</td>
+        <td>
+          {% if a.success %}<span class="badge badge-ok">ok</span>{% else %}<span class="badge badge-fail">{{ a.reason or 'fail' }}</span>{% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="empty">No activations yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const tsData = {{ timeseries | tojson }};
+const countryData = {{ by_country | tojson }};
+
+new Chart(document.getElementById('ts-chart'), {
+  type: 'line',
+  data: {
+    labels: tsData.map(r => r.day),
+    datasets: [{ label: 'Activations', data: tsData.map(r => r.count), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.3, fill: true }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+new Chart(document.getElementById('country-chart'), {
+  type: 'bar',
+  data: {
+    labels: countryData.map(r => r.country),
+    datasets: [{ label: 'Activations', data: countryData.map(r => r.count), backgroundColor: '#10b981' }]
+  },
+  options: { plugins: { legend: { display: false } }, indexAxis: 'y' }
+});
+</script>
+{% endblock %}

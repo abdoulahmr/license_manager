@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}License {{ license.license_key }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 style="margin:0"><code>{{ license.license_key }}</code></h1>
+    <small>{{ license.product_name }} · {{ license.customer_name }} · {{ license.license_type }}</small>
+  </div>
+  <div class="actions">
+    <a href="{{ url_for('licenses.edit', lid=license.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+    <form method="post" action="{{ url_for('licenses.reset', lid=license.id) }}"
+          onsubmit="return confirm('Reset activation? This will allow re-activation on a new machine.');">
+      <button type="submit" class="btn btn-sm btn-warn">Reset activation</button>
+    </form>
+    {% if license.status != 'revoked' %}
+    <form method="post" action="{{ url_for('licenses.revoke', lid=license.id) }}"
+          onsubmit="return confirm('Revoke this license? It will no longer validate.');">
+      <button type="submit" class="btn btn-sm btn-danger">Revoke</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('licenses.delete', lid=license.id) }}"
+          onsubmit="return confirm('Delete this license and all its history?');">
+      <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:1rem">
+  <table class="table key-value">
+    <tr><td>Status</td><td>{{ license.status }}</td></tr>
+    <tr><td>Activated at</td><td>{{ license.activated_at | fmt }}</td></tr>
+    <tr><td>Created at</td><td>{{ license.created_at | fmt }}</td></tr>
+    <tr><td>Customer email</td><td>{{ license.customer_email or '—' }}</td></tr>
+    <tr><td>Notes</td><td>{{ license.notes or '—' }}</td></tr>
+    <tr><td>Fingerprint</td><td><code style="word-break:break-all">{{ license.machine_fingerprint or '—' }}</code></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>Activation history</h2>
+  <table class="table">
+    <thead><tr>
+      <th>When</th><th>Event</th><th>Hostname</th><th>OS</th><th>IP (public / local)</th>
+      <th>Location</th><th>ISP</th><th>MAC</th><th>Result</th>
+    </tr></thead>
+    <tbody>
+    {% for a in history %}
+      <tr>
+        <td>{{ a.created_at | fmt }}</td>
+        <td>{{ a.event_type }}</td>
+        <td>{{ a.hostname or '—' }}</td>
+        <td>{{ a.os_info or '—' }} <small>{{ a.os_version or '' }}</small></td>
+        <td>{{ a.public_ip or '—' }}<br><small>{{ a.local_ip or '' }}</small></td>
+        <td>{{ a.city or '—' }}, {{ a.country or '—' }}</td>
+        <td>{{ a.isp_org or '—' }}</td>
+        <td><code>{{ a.mac_address or '—' }}</code></td>
+        <td>
+          {% if a.success %}<span class="badge badge-ok">ok</span>
+          {% else %}<span class="badge badge-fail">{{ a.reason or 'fail' }}</span>{% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="9" class="empty">No activation events yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

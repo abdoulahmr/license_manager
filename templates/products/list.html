@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Products</h1>
+  <a href="{{ url_for('products.add') }}" class="btn btn-primary">+ New product</a>
+</div>
+<div class="card">
+  <table class="table">
+    <thead><tr><th>Name</th><th>Prefix</th><th>Version</th><th>Description</th><th>Licenses</th><th>Active</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for p in products %}
+      <tr>
+        <td><strong>{{ p.name }}</strong></td>
+        <td><code>{{ p.code_prefix }}</code></td>
+        <td>{{ p.version }}</td>
+        <td>{{ p.description or '—' }}</td>
+        <td>{{ p.license_count }}</td>
+        <td>{{ p.active_count }}</td>
+        <td class="actions">
+          <a href="{{ url_for('products.edit', pid=p.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+          <form method="post" action="{{ url_for('products.delete', pid=p.id) }}"
+                onsubmit="return confirm('Delete product? All its licenses will be cascade-deleted.');">
+            <button type="submit" class="btn-link btn-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="empty">No products yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
